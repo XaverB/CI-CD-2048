@@ -1,0 +1,97 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+image: maven:3.8.5-openjdk-17
+
+variables:
+  maven_packages_cache: ".m2/repository"
+  MAVEN_OPT: "-Dmaven.repo.local=./$maven_packages_cache"
+
+build:
+  stage: build
+  tags:
+    - docker
+  cache:
+    paths:
+      - "$maven_packages_cache"
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: 1 week
+    paths:
+      - "target/*"
+  script:
+    - mvn compile
+
+test:
+  stage: test
+  tags:
+    - docker
+  dependencies:
+    - build
+  cache:
+    paths:
+      - "$maven_packages_cache"
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: 1 week
+    paths:
+      - "target/surfire-reports/*"
+      - "target/site/jacoco/*"
+  script:
+    - mvn test
+
+package:
+  stage: package
+  tags:
+    - docker
+  dependencies:
+    - build
+  cache:
+    paths:
+      - "$maven_packages_cache"
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: 1 week
+    paths:
+      - "target/*.war"
+  script:
+    - mvn package
+
+deploy_test:
+  stage: deploy
+  tags:
+    - shell
+  dependencies:
+    - package
+  environment:
+    name: test
+    action: start
+    url: http://localhost:8080/game2048
+    on_stop: stop_test
+  when: manual
+  script:
+    - docker rm --force tomcat
+    - docker image rm --force game2048
+    - echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
+    - docker run --rm -d --name tomcat -p 8080:8080 game2048
+
+stop_test:
+  stage: deploy
+  tags:
+    - shell
+  environment:
+    name: test
+    action: stop
+  when: manual
+  script:
+    - docker rm --force tomcat
+    - docker image rm --force game2048
+
+
+
+
+
+
