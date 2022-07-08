@@ -11,8 +11,8 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - run: mvn compile
-      - run: mkdir staging && cp target/*.war staging
+      - run: mkdir artifacts && cp target/*.class artifacts
       - uses: actions/upload-artifact@v3
         with:
-          name: Package
-          path: staging
+          name: classes
+          path: artifacts
