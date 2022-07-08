@@ -9,12 +9,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-          cache: 'maven
+          cache: 'maven'
       - run: mvn compile
-      - run: mkdir artifacts && cp target/*.class artifacts
       - uses: actions/upload-artifact@v3
         with:
           name: classes
-          path: artifacts
-      - run: mvn test
-      - run: mvn package
+          path: ./target/*.class
+
+#      - run: mkdir artifacts && cp target/*.class artifacts
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: classes
+#          path: artifacts
+#      - run: mvn test
+#      - run: mvn package
