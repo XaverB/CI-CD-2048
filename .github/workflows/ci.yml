@@ -29,7 +29,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: classes
-      - run: mvn compile
+      - run: mvn test
   package-job:
     needs: compile-job
     runs-on: ubuntu-latest
@@ -49,3 +49,22 @@ jobs:
         with:
           name: package
           path: /home/runner/work/CI-CD-2048/CI-CD-2048/target/game2048.war
+  deploy-job:
+    needs: [package-job]
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: package
+        run: |
+          - docker rm --force tomcat
+          - docker image rm --force game2048
+          - echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
+          - docker run --rm -d --name tomcat -p 8080:8080 game2048
