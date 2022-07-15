@@ -64,7 +64,7 @@ jobs:
         with:
           name: package
         run: |
-          - docker rm --force tomcat
-          - docker image rm --force game2048
-          - echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
-          - docker run --rm -d --name tomcat -p 8080:8080 game2048
+          docker rm --force tomcat
+          docker image rm --force game2048
+          echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
+          docker run --rm -d --name tomcat -p 8080:8080 game2048
