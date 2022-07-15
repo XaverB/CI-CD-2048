@@ -19,6 +19,7 @@ jobs:
     needs: compile-job
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -30,8 +31,10 @@ jobs:
           name: classes
       - run: mvn compile
   package-job:
+    needs: compile-job
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
