@@ -1,7 +1,7 @@
 name: GitHub 2048 CI/CD
-on: [push]
+on: [ push ]
 jobs:
-  Compile:
+  compile-job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,11 +15,34 @@ jobs:
         with:
           name: classes
           path: /home/runner/work/CI-CD-2048/CI-CD-2048/target/classes
-
-#      - run: mkdir artifacts && cp target/*.class artifacts
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: classes
-#          path: artifacts
-#      - run: mvn test
-#      - run: mvn package
+  test-job:
+    needs: compile-job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: classes
+      - run: mvn compile
+  package-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: classes
+      - run: mvn package
+      - uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: /home/runner/work/CI-CD-2048/CI-CD-2048/target/game2048.war
